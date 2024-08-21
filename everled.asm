@@ -2,7 +2,7 @@
 
     ; CONFIG1
     config FOSC = INTOSC    ; Oscillator Selection Bits (INTOSC oscillator: I/O function on CLKIN pin)
-    config WDTE = ON        ; Watchdog Timer Enable (WDT enabled)
+    config WDTE = SWDTEN    ; Watchdog Timer Enable (WDT controlled by the SWDTEN bit in the WDTCON register)
     config PWRTE = OFF      ; Power-up Timer Enable (PWRT disabled)
     config MCLRE = ON       ; MCLR Pin Function Select (MCLR/VPP pin function is MCLR)
     config CP = OFF         ; Flash Program Memory Code Protection (Program memory code protection is disabled)
@@ -30,9 +30,9 @@ start
     ; init
     movlb 1
 
-    ; OSCCONbits.IRCF = 0b1011; // 1MHz
+    ; OSCCONbits.IRCF = 0b1100; // 2MHz
     ; OSCCONbits.SCS = 0b10; // Internal OSC Block
-    movlw b'01011010'
+    movlw b'01100010'
     movwf OSCCON
 
     ; WDTCONbits.WDTPS = 0b00011; // 1:256 8ms
@@ -45,6 +45,10 @@ start
     ; TRISA = 0; // RA is output
     clrf TRISA
 
+    ; ANSELA = 0; // RA is digital
+    movlb 3
+    clrf ANSELA
+
     ; init finished
     movlb 0
 
@@ -53,12 +57,8 @@ start
 loop
     ; toggle RA5 for 2us
     bsf PORTA, 5
-    nop
     bcf PORTA, 5
     sleep
     goto loop
-
-    ; fill remainder of program memory with reset instructions
-    fill (reset), 0x3fe-$
 
     end
